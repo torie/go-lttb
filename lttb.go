@@ -17,15 +17,32 @@ type Point struct {
 	Y float64
 }
 
+// GetX returns the X value for a point
+func (p Point) GetX() float64 {
+	return p.X
+}
+
+// GetY returns the Y value for a point
+func (p Point) GetY() float64 {
+	return p.Y
+}
+
+// XYPoint in an interface capable of representing a point defined by it's
+// X and Y value
+type XYPoint interface {
+	GetX() float64
+	GetY() float64
+}
+
 // LTTB down-samples the data to contain only threshold number of points that
 // have the same visual shape as the original data
-func LTTB(data []Point, threshold int) []Point {
+func LTTB(data []XYPoint, threshold int) []XYPoint {
 
 	if threshold >= len(data) || threshold == 0 {
 		return data // Nothing to do
 	}
 
-	sampled := make([]Point, 0, threshold)
+	sampled := make([]XYPoint, 0, threshold)
 
 	// Bucket size. Leave room for start and end data points
 	every := float64(len(data)-2) / float64(threshold-2)
@@ -53,8 +70,8 @@ func LTTB(data []Point, threshold int) []Point {
 
 		var avgX, avgY float64
 		for ; avgRangeStart < avgRangeEnd; avgRangeStart++ {
-			avgX += data[avgRangeStart].X
-			avgY += data[avgRangeStart].Y
+			avgX += data[avgRangeStart].GetX()
+			avgY += data[avgRangeStart].GetY()
 		}
 		avgX /= avgRangeLength
 		avgY /= avgRangeLength
@@ -64,15 +81,15 @@ func LTTB(data []Point, threshold int) []Point {
 		rangeTo := bucketCenter
 
 		// Point a
-		pointAX := data[a].X
-		pointAY := data[a].Y
+		pointAX := data[a].GetX()
+		pointAY := data[a].GetY()
 
 		var maxArea float64
 
 		var nextA int
 		for ; rangeOffs < rangeTo; rangeOffs++ {
 			// Calculate triangle area over three buckets
-			area := math.Abs((pointAX-avgX)*(data[rangeOffs].Y-pointAY) - (pointAX-data[rangeOffs].X)*(avgY-pointAY))
+			area := math.Abs((pointAX-avgX)*(data[rangeOffs].GetY()-pointAY) - (pointAX-data[rangeOffs].GetX())*(avgY-pointAY))
 			if area > maxArea {
 				maxArea = area
 				nextA = rangeOffs // Next a is this b
