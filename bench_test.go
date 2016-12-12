@@ -509,6 +509,12 @@ var data = []Point{
 
 func BenchmarkLTTB(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		LTTB(data, 1000)
+		xypoints := make([]XYPoint, len(data))
+		for i, v := range data {
+			xypoints[i] = XYPoint(v)
+		}
+
+		LTTB(xypoints, 1000)
 	}
 }
+
